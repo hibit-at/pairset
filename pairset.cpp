@@ -6,11 +6,13 @@ struct pairset
 {
     std::set<std::pair<int, int>> data;
     std::map<int, int> count;
+    int size;
 
     pairset()
     {
         data.insert({INT_MIN, INT_MIN});
         data.insert({INT_MAX, INT_MAX});
+        size = 0;
     }
 
     bool contains(int x)
@@ -29,6 +31,7 @@ struct pairset
         auto [next_L, next_R] = *next_itr;
         if (L <= x && x <= R)
         {
+            size++;
             return false;
         }
         if (R == x - 1)
@@ -57,14 +60,20 @@ struct pairset
                 data.insert({x, x});
             }
         }
+        size++;
         return true;
     }
 
     bool remove(int x)
     {
+        if (count[x] == 0)
+        {
+            return false;
+        }
         count[x]--;
         if (count[x])
         {
+            size--;
             return false;
         }
         auto next_itr = data.lower_bound({x + 1, x + 1});
@@ -75,7 +84,11 @@ struct pairset
         {
             return false;
         }
-        if (x == L)
+        if (L == R)
+        {
+            data.erase(itr);
+        }
+        else if (x == L)
         {
             data.erase(itr);
             data.insert({x + 1, R});
@@ -91,6 +104,7 @@ struct pairset
             data.insert({L, x - 1});
             data.insert({x + 1, R});
         }
+        size--;
         return true;
     }
 
@@ -107,10 +121,16 @@ struct pairset
         }
     }
 
-    int left()
+    int min()
     {
         auto itr = *data.lower_bound({INT_MIN + 1, INT_MIN + 1});
         return itr.first;
+    }
+
+    int max()
+    {
+        auto itr = *prev(data.lower_bound({INT_MAX, INT_MAX}));
+        return itr.second;
     }
 };
 
